@@ -90,7 +90,7 @@ async def post_review_to_github(
 ) -> bool:
     event_map = {
         "approve": "APPROVE",
-        "request_changes": "REQUEST_CHANGES",
+        "request_changes": "COMMENT",
         "needs_discussion": "COMMENT",
     }
     event = event_map.get(recommendation, "COMMENT")

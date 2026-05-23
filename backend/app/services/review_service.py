@@ -1,3 +1,4 @@
+import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -6,6 +7,8 @@ from app.models.comment import ReviewComment
 from app.services.github_service import fetch_pr_details, fetch_pr_files, post_review_to_github
 from app.services.filter_service import filter_diff
 from app.services.ai_service import analyze_code
+
+logger = logging.getLogger(__name__)
 
 
 async def run_review(owner: str, repo: str, pr_number: int, db: AsyncSession) -> Review:
@@ -66,6 +69,7 @@ async def run_review(owner: str, repo: str, pr_number: int, db: AsyncSession) ->
         )
 
     except Exception as e:
+        logger.error(f"Review failed for {owner}/{repo}#{pr_number}: {type(e).__name__}: {e}")
         review.status = "failed"
         await db.commit()
         raise e
