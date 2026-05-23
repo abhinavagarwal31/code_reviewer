@@ -1,0 +1,29 @@
+# Virtual environment
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment variables
+backend/.env
+
+# Database
+*.db
+*.sqlite3
+
+# Node
+node_modules/
+frontend/node_modules/
+
+# Build outputs
+dist/
+build/
+frontend/dist/
+
+# OS
+.DS_Store
+
+# Claude Code
+CLAUDE.md
