@@ -1,3 +1,108 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, func
+from pydantic import BaseModel
+from datetime import datetime
+from typing import Optional
+
+from app.db.database import get_db
+from app.models.review import Review
+from app.models.comment import ReviewComment
 
 router = APIRouter()
+
+
+class CommentOut(BaseModel):
+    id: int
+    review_id: int
+    file_name: str
+    line_number: Optional[int]
+    severity: str
+    confidence: Optional[float]
+    category: str
+    description: str
+    suggested_fix: Optional[str]
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class SeverityCounts(BaseModel):
+    critical: int = 0
+    warning: int = 0
+    suggestion: int = 0
+
+
+class ReviewOut(BaseModel):
+    id: int
+    pr_number: int
+    repo_name: str
+    pr_title: Optional[str]
+    author: Optional[str]
+    status: str
+    recommendation: Optional[str]
+    risk_score: Optional[float]
+    summary: Optional[str]
+    created_at: datetime
+    severity_counts: SeverityCounts = SeverityCounts()
+
+    model_config = {"from_attributes": True}
+
+
+class ReviewDetailOut(ReviewOut):
+    comments: list[CommentOut] = []
+
+
+async def _get_severity_counts(review_id: int, db: AsyncSession) -> SeverityCounts:
+    result = await db.execute(
+        select(ReviewComment.severity, func.count(ReviewComment.id))
+        .where(ReviewComment.review_id == review_id)
+        .group_by(ReviewComment.severity)
+    )
+    rows = result.all()
+    counts = SeverityCounts()
+    for severity, count in rows:
+        if severity == "critical":
+            counts.critical = count
+        elif severity == "warning":
+            counts.warning = count
+        elif severity == "suggestion":
+            counts.suggestion = count
+    return counts
+
+
+@router.get("/reviews", response_model=list[ReviewOut])
+async def list_reviews(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(Review).order_by(Review.created_at.desc())
+    )
+    reviews = result.scalars().all()
+
+    out = []
+    for review in reviews:
+        counts = await _get_severity_counts(review.id, db)
+        review_out = ReviewOut.model_validate(review)
+        review_out.severity_counts = counts
+        out.append(review_out)
+
+    return out
+
+
+@router.get("/reviews/{review_id}", response_model=ReviewDetailOut)
+async def get_review(review_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Review).where(Review.id == review_id))
+    review = result.scalar_one_or_none()
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+
+    comments_result = await db.execute(
+        select(ReviewComment).where(ReviewComment.review_id == review_id)
+    )
+    comments = comments_result.scalars().all()
+    counts = await _get_severity_counts(review_id, db)
+
+    review_out = ReviewDetailOut.model_validate(review)
+    review_out.comments = [CommentOut.model_validate(c) for c in comments]
+    review_out.severity_counts = counts
+
+    return review_out
