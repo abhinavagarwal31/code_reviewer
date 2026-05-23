@@ -1,24 +1,24 @@
-import fnmatch
+import os
 
-SKIP_PATTERNS = [
-    "package-lock.json",
-    "yarn.lock",
-    "*.min.js",
-    "*.lock",
-    "*.snap",
-    "*/dist/*",
-    "*/build/*",
-    "*/__generated__/*",
-    "*/migrations/*",
-]
+SKIP_EXACT = {"package-lock.json", "yarn.lock"}
+SKIP_EXTENSIONS = {".min.js", ".lock", ".snap"}
+SKIP_PATH_SEGMENTS = {"dist", "build", "__generated__", "migrations", "node_modules"}
 
 MAX_LINES = 500
 
 
 def _should_skip(filename: str) -> bool:
-    for pattern in SKIP_PATTERNS:
-        if fnmatch.fnmatch(filename, pattern):
-            return True
+    base = filename.replace("\\", "/").split("/")[-1]
+    if base in SKIP_EXACT:
+        return True
+    if base.endswith(".min.js") or base.endswith(".min.css"):
+        return True
+    _, ext = os.path.splitext(base)
+    if ext in SKIP_EXTENSIONS:
+        return True
+    parts = set(filename.replace("\\", "/").split("/"))
+    if parts & SKIP_PATH_SEGMENTS:
+        return True
     return False
 
 

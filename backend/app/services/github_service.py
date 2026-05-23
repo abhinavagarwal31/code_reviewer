@@ -87,6 +87,7 @@ async def post_review_to_github(
     summary: str,
     recommendation: str,
     issues: list,
+    risk_score: float | None = None,
 ) -> bool:
     event_map = {
         "approve": "APPROVE",
@@ -106,10 +107,9 @@ async def post_review_to_github(
             "body": _format_comment_body(issue),
         })
 
-    risk = issues[0].get("risk_score") if issues else None
     body_lines = [f"## AI Code Review\n\n{summary}"]
-    if risk is not None:
-        body_lines.append(f"\n**Risk Score:** {risk}/10")
+    if risk_score is not None:
+        body_lines.append(f"\n**Risk Score:** {risk_score}/10")
     body_lines.append(f"\n**Recommendation:** {recommendation.replace('_', ' ').title()}")
     body = "\n".join(body_lines)
 

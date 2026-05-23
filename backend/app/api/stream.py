@@ -14,13 +14,14 @@ router = APIRouter()
 @router.get("/stream")
 async def stream(request: Request):
     async def event_generator():
+        seen_ids: set[int] = set()
         heartbeat_counter = 0
+
         while True:
             if await request.is_disconnected():
                 break
 
-            # Check for reviews completed in the last 10 seconds
-            since = datetime.utcnow() - timedelta(seconds=10)
+            since = datetime.utcnow() - timedelta(seconds=30)
             async with AsyncSessionLocal() as db:
                 result = await db.execute(
                     select(Review).where(
@@ -28,14 +29,15 @@ async def stream(request: Request):
                         Review.created_at >= since,
                     )
                 )
-                recent = result.scalars().first()
+                recent = result.scalars().all()
 
-            if recent:
-                yield {"data": json.dumps({"type": "new_review", "review_id": recent.id})}
+            for review in recent:
+                if review.id not in seen_ids:
+                    seen_ids.add(review.id)
+                    yield {"data": json.dumps({"type": "new_review", "review_id": review.id})}
 
-            # Send heartbeat comment every 15 seconds to keep connection alive
             heartbeat_counter += 1
-            if heartbeat_counter >= 8:  # 8 * 2s = 16s
+            if heartbeat_counter >= 8:
                 yield {"comment": "heartbeat"}
                 heartbeat_counter = 0
 

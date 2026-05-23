@@ -66,6 +66,7 @@ async def run_review(owner: str, repo: str, pr_number: int, db: AsyncSession) ->
             summary=review.summary or "",
             recommendation=review.recommendation or "needs_discussion",
             issues=analysis.get("issues", []),
+            risk_score=review.risk_score,
         )
 
     except Exception as e:

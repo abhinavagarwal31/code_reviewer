@@ -5,7 +5,7 @@ import StatsBar from '../components/StatsBar'
 import PRTable from '../components/PRTable'
 
 export default function Dashboard() {
-  const { reviews, loading, reload } = useReviews()
+  const { reviews, loading, error, reload } = useReviews()
   const onNew = useCallback(() => reload(), [reload])
   useStream(onNew)
 
@@ -19,6 +19,8 @@ export default function Dashboard() {
         </div>
         {loading
           ? <div className="text-center py-16 text-slate-500">Loading...</div>
+          : error
+          ? <div className="text-center py-16 text-red-400">{error}</div>
           : <PRTable reviews={reviews} />}
       </div>
     </div>
