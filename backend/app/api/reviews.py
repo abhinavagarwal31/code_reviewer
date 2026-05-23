@@ -51,6 +51,7 @@ class ReviewOut(BaseModel):
 
 class ReviewDetailOut(ReviewOut):
     comments: list[CommentOut] = []
+    diff_json: Optional[str] = None
 
 
 async def _get_severity_counts(review_id: int, db: AsyncSession) -> SeverityCounts:

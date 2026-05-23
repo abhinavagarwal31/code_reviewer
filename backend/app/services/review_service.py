@@ -1,3 +1,4 @@
+import json
 import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -34,6 +35,8 @@ async def run_review(owner: str, repo: str, pr_number: int, db: AsyncSession) ->
         for f in filtered["filtered_files"]:
             diff_parts.append(f"--- {f['filename']} ---\n{f['patch']}")
         diff_content = "\n\n".join(diff_parts)
+
+        review.diff_json = json.dumps(filtered["filtered_files"])
 
         analysis = await analyze_code(diff_content)
 
