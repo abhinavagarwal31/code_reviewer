@@ -91,7 +91,7 @@ async def post_review_to_github(
 ) -> bool:
     event_map = {
         "approve": "APPROVE",
-        "request_changes": "COMMENT",
+        "request_changes": "REQUEST_CHANGES",
         "needs_discussion": "COMMENT",
     }
     event = event_map.get(recommendation, "COMMENT")
@@ -123,7 +123,13 @@ async def post_review_to_github(
     url = f"{GITHUB_API}/repos/{owner}/{repo}/pulls/{pr_number}/reviews"
     async with httpx.AsyncClient() as client:
         response = await client.post(url, headers=_HEADERS, json=payload)
-        if response.status_code not in (200, 201):
-            print(f"GitHub review post failed: {response.status_code} {response.text}")
-            return False
-        return True
+        if response.status_code in (200, 201):
+            return True
+        # GitHub returns 422 when reviewer is the PR author — fall back to COMMENT
+        if response.status_code == 422 and event == "REQUEST_CHANGES":
+            payload["event"] = "COMMENT"
+            fallback = await client.post(url, headers=_HEADERS, json=payload)
+            if fallback.status_code in (200, 201):
+                return True
+        print(f"GitHub review post failed: {response.status_code} {response.text}")
+        return False

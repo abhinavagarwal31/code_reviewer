@@ -12,7 +12,10 @@ export default function PRDetail() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchReview(id).then(data => { setReview(data); setLoading(false) })
+    fetchReview(id)
+      .then(data => setReview(data))
+      .catch(() => setReview(null))
+      .finally(() => setLoading(false))
   }, [id])
 
   if (loading) return <div className="text-center py-24 text-slate-500">Loading review...</div>
