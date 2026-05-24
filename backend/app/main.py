@@ -16,7 +16,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="AI Code Reviewer", lifespan=lifespan)
+app = FastAPI(title="MergeLens", lifespan=lifespan)
 
 _origins = [o.strip() for o in os.getenv("FRONTEND_URL", "http://localhost:5173").split(",")]
 
