@@ -14,26 +14,24 @@ router = APIRouter()
 @router.get("/stream")
 async def stream(request: Request):
     async def event_generator():
-        seen_ids: set[int] = set()
+        # Track id → last-seen status so we re-emit when pending → completed
+        seen: dict[int, str] = {}
         heartbeat_counter = 0
 
         while True:
             if await request.is_disconnected():
                 break
 
-            since = datetime.utcnow() - timedelta(seconds=30)
+            since = datetime.utcnow() - timedelta(seconds=60)
             async with AsyncSessionLocal() as db:
                 result = await db.execute(
-                    select(Review).where(
-                        Review.status == "completed",
-                        Review.created_at >= since,
-                    )
+                    select(Review).where(Review.created_at >= since)
                 )
                 recent = result.scalars().all()
 
             for review in recent:
-                if review.id not in seen_ids:
-                    seen_ids.add(review.id)
+                if seen.get(review.id) != review.status:
+                    seen[review.id] = review.status
                     yield {"data": json.dumps({"type": "new_review", "review_id": review.id})}
 
             heartbeat_counter += 1
