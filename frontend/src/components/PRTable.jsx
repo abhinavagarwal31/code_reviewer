@@ -8,10 +8,31 @@ const recColors = {
   needs_discussion: 'bg-yellow-950 text-yellow-400',
 }
 
-const statusColors = {
-  completed: 'bg-green-950 text-green-400',
-  pending:   'bg-slate-700 text-slate-400',
-  failed:    'bg-red-950 text-red-400',
+const providerColors = {
+  openai: 'bg-emerald-950 text-emerald-400',
+  claude: 'bg-orange-950 text-orange-400',
+}
+
+const providerLabels = {
+  openai: 'GPT-4o',
+  claude: 'Claude',
+}
+
+function StatusCell({ status }) {
+  if (status === 'pending') {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-700 text-slate-300">
+        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse" />
+        pending
+      </span>
+    )
+  }
+  const cls = status === 'completed'
+    ? 'bg-green-950 text-green-400'
+    : 'bg-red-950 text-red-400'
+  return (
+    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${cls}`}>{status}</span>
+  )
 }
 
 export default function PRTable({ reviews }) {
@@ -30,7 +51,7 @@ export default function PRTable({ reviews }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-slate-700">
-            {['Repo', 'PR Title', 'Author', '🔴 Critical', '🟡 Warnings', '🔵 Suggestions', 'Risk', 'Recommendation', 'Status', 'Date'].map(h => (
+            {['Repo', 'PR Title', 'Author', '🔴 Critical', '🟡 Warnings', '🔵 Suggestions', 'Risk', 'Recommendation', 'AI', 'Status', 'Date'].map(h => (
               <th key={h} className="text-left px-4 py-3 text-xs text-slate-400 uppercase tracking-wider font-medium whitespace-nowrap">{h}</th>
             ))}
           </tr>
@@ -40,7 +61,7 @@ export default function PRTable({ reviews }) {
             <tr
               key={r.id}
               onClick={() => navigate(`/reviews/${r.id}`)}
-              className="border-b border-slate-800 hover:bg-slate-750 cursor-pointer transition-colors hover:bg-slate-700/50"
+              className="border-b border-slate-800 hover:bg-slate-700/50 cursor-pointer transition-colors"
             >
               <td className="px-4 py-3 text-slate-300 font-mono text-xs whitespace-nowrap">{r.repo_name}</td>
               <td className="px-4 py-3 text-slate-200 max-w-[200px] truncate">{r.pr_title ?? `PR #${r.pr_number}`}</td>
@@ -54,7 +75,12 @@ export default function PRTable({ reviews }) {
                   : <span className="text-slate-500">—</span>}
               </td>
               <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${recColors[r.recommendation] ?? 'bg-slate-700 text-slate-400'}`}>{(r.recommendation ?? '—').replace('_', ' ')}</span></td>
-              <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${statusColors[r.status] ?? 'bg-slate-700 text-slate-400'}`}>{r.status}</span></td>
+              <td className="px-4 py-3 whitespace-nowrap">
+                {r.ai_provider
+                  ? <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${providerColors[r.ai_provider] ?? 'bg-slate-700 text-slate-400'}`}>{providerLabels[r.ai_provider] ?? r.ai_provider}</span>
+                  : <span className="text-slate-500">—</span>}
+              </td>
+              <td className="px-4 py-3"><StatusCell status={r.status} /></td>
               <td className="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">{new Date(r.created_at).toLocaleString()}</td>
             </tr>
           ))}

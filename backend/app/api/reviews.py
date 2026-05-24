@@ -43,6 +43,7 @@ class ReviewOut(BaseModel):
     recommendation: Optional[str]
     risk_score: Optional[float]
     summary: Optional[str]
+    ai_provider: Optional[str]
     created_at: datetime
     severity_counts: SeverityCounts = SeverityCounts()
 

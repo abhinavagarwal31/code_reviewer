@@ -16,3 +16,13 @@ export async function clearDb() {
   const res = await axios.delete(`${BASE_URL}/admin/clear-db`)
   return res.data
 }
+
+export async function getProvider() {
+  const res = await axios.get(`${BASE_URL}/config/provider`)
+  return res.data.provider
+}
+
+export async function setProvider(provider) {
+  const res = await axios.post(`${BASE_URL}/config/provider`, { provider })
+  return res.data.provider
+}

@@ -7,7 +7,20 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-AI_PROVIDER = os.getenv("AI_PROVIDER", "openai")
+# Mutable at runtime via /config/provider endpoint
+_current_provider = os.getenv("AI_PROVIDER", "openai")
+
+
+def get_provider() -> str:
+    return _current_provider
+
+
+def set_provider(provider: str):
+    global _current_provider
+    if provider not in ("openai", "claude"):
+        raise ValueError(f"Unknown provider: {provider}")
+    _current_provider = provider
+
 
 SYSTEM_PROMPT = """You are an expert code reviewer specializing in security, performance, and software quality.
 
@@ -40,7 +53,6 @@ Return only JSON. No markdown. No explanation outside the JSON."""
 
 def _clean_json(raw: str) -> str:
     raw = raw.strip()
-    # Strip markdown code fences if model wraps output
     raw = re.sub(r"^```(?:json)?\s*", "", raw)
     raw = re.sub(r"\s*```$", "", raw)
     return raw.strip()
@@ -74,7 +86,10 @@ async def _analyze_with_claude(diff_content: str) -> dict:
     return json.loads(_clean_json(raw))
 
 
-async def analyze_code(diff_content: str) -> dict:
-    if AI_PROVIDER == "claude":
-        return await _analyze_with_claude(diff_content)
-    return await _analyze_with_openai(diff_content)
+async def analyze_code(diff_content: str) -> tuple[dict, str]:
+    provider = get_provider()
+    if provider == "claude":
+        result = await _analyze_with_claude(diff_content)
+    else:
+        result = await _analyze_with_openai(diff_content)
+    return result, provider

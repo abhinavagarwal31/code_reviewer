@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 from app.db.init_db import init_db
-from app.api import webhook, reviews, stream
+from app.api import webhook, reviews, stream, config
 
 load_dotenv()
 
@@ -31,6 +31,7 @@ app.add_middleware(
 app.include_router(webhook.router)
 app.include_router(reviews.router)
 app.include_router(stream.router)
+app.include_router(config.router)
 
 
 @app.get("/health")

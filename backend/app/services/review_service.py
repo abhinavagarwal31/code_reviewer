@@ -1,7 +1,6 @@
 import json
 import logging
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
 from app.models.review import Review
 from app.models.comment import ReviewComment
@@ -38,11 +37,12 @@ async def run_review(owner: str, repo: str, pr_number: int, db: AsyncSession) ->
 
         review.diff_json = json.dumps(filtered["filtered_files"])
 
-        analysis = await analyze_code(diff_content)
+        analysis, provider = await analyze_code(diff_content)
 
         review.summary = analysis.get("summary")
         review.recommendation = analysis.get("recommendation")
         review.risk_score = float(analysis.get("risk_score", 0))
+        review.ai_provider = provider
 
         for issue in analysis.get("issues", []):
             comment = ReviewComment(

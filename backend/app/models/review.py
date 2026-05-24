@@ -16,5 +16,6 @@ class Review(Base):
     recommendation: Mapped[str | None] = mapped_column(String, nullable=True)
     risk_score: Mapped[float | None] = mapped_column(Float, nullable=True)
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    ai_provider: Mapped[str | None] = mapped_column(String, nullable=True)
     diff_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
