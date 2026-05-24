@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, delete
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
@@ -87,6 +87,14 @@ async def list_reviews(db: AsyncSession = Depends(get_db)):
         out.append(review_out)
 
     return out
+
+
+@router.delete("/admin/clear-db")
+async def clear_db(db: AsyncSession = Depends(get_db)):
+    await db.execute(delete(ReviewComment))
+    await db.execute(delete(Review))
+    await db.commit()
+    return {"status": "cleared"}
 
 
 @router.get("/reviews/{review_id}", response_model=ReviewDetailOut)
