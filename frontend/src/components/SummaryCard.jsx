@@ -1,13 +1,15 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCircleCheck, faCircleXmark, faCommentDots } from '@fortawesome/free-solid-svg-icons'
 import RiskScore from './RiskScore'
 
 const recConfig = {
-  approve:          { label: '✅ Approved',        cls: 'bg-green-950 text-green-400 border-green-800' },
-  request_changes:  { label: '❌ Request Changes',  cls: 'bg-red-950 text-red-400 border-red-800' },
-  needs_discussion: { label: '💬 Needs Discussion', cls: 'bg-yellow-950 text-yellow-400 border-yellow-800' },
+  approve:          { label: 'Approved',         icon: faCircleCheck,  cls: 'bg-green-950 text-green-400 border-green-800' },
+  request_changes:  { label: 'Request Changes',  icon: faCircleXmark,  cls: 'bg-red-950 text-red-400 border-red-800' },
+  needs_discussion: { label: 'Needs Discussion', icon: faCommentDots,  cls: 'bg-yellow-950 text-yellow-400 border-yellow-800' },
 }
 
 export default function SummaryCard({ review }) {
-  const rec = recConfig[review.recommendation] ?? { label: review.recommendation ?? '—', cls: 'bg-slate-800 text-slate-400 border-slate-600' }
+  const rec = recConfig[review.recommendation] ?? { label: review.recommendation ?? '—', icon: null, cls: 'bg-slate-800 text-slate-400 border-slate-600' }
 
   return (
     <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 mb-6">
@@ -19,7 +21,10 @@ export default function SummaryCard({ review }) {
           </p>
         </div>
         <div className="flex items-center gap-4 shrink-0">
-          <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${rec.cls}`}>{rec.label}</span>
+          <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold border ${rec.cls}`}>
+            {rec.icon && <FontAwesomeIcon icon={rec.icon} />}
+            {rec.label}
+          </span>
           <RiskScore score={review.risk_score} />
         </div>
       </div>

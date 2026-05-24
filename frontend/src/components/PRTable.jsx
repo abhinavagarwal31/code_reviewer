@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCircleExclamation, faTriangleExclamation, faLightbulb } from '@fortawesome/free-solid-svg-icons'
 import SeverityBadge from './SeverityBadge'
 import RiskScore from './RiskScore'
 
@@ -51,8 +53,20 @@ export default function PRTable({ reviews }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-slate-700">
-            {['Repo', 'PR Title', 'Author', '🔴 Critical', '🟡 Warnings', '🔵 Suggestions', 'Risk', 'Recommendation', 'AI', 'Status', 'Date'].map(h => (
-              <th key={h} className="text-left px-4 py-3 text-xs text-slate-400 uppercase tracking-wider font-medium whitespace-nowrap">{h}</th>
+            {[
+              { key: 'Repo', label: 'Repo' },
+              { key: 'PR Title', label: 'PR Title' },
+              { key: 'Author', label: 'Author' },
+              { key: 'Critical', label: <span className="inline-flex items-center gap-1.5"><FontAwesomeIcon icon={faCircleExclamation} className="text-red-400" />Critical</span> },
+              { key: 'Warnings', label: <span className="inline-flex items-center gap-1.5"><FontAwesomeIcon icon={faTriangleExclamation} className="text-yellow-400" />Warnings</span> },
+              { key: 'Suggestions', label: <span className="inline-flex items-center gap-1.5"><FontAwesomeIcon icon={faLightbulb} className="text-blue-400" />Suggestions</span> },
+              { key: 'Risk', label: 'Risk' },
+              { key: 'Recommendation', label: 'Recommendation' },
+              { key: 'AI', label: 'AI' },
+              { key: 'Status', label: 'Status' },
+              { key: 'Date', label: 'Date' },
+            ].map(({ key, label }) => (
+              <th key={key} className="text-left px-4 py-3 text-xs text-slate-400 uppercase tracking-wider font-medium whitespace-nowrap">{label}</th>
             ))}
           </tr>
         </thead>

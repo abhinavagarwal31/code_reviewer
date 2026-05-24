@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer-continued'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faArrowLeft, faFileCode } from '@fortawesome/free-solid-svg-icons'
 import { fetchReview } from '../services/api'
 import SummaryCard from '../components/SummaryCard'
 import SeverityBadge from '../components/SeverityBadge'
@@ -64,7 +66,7 @@ export default function PRDetail() {
           onClick={() => navigate('/')}
           className="bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2 rounded-lg text-sm transition-colors"
         >
-          ← Back
+          <FontAwesomeIcon icon={faArrowLeft} className="mr-1.5" />Back
         </button>
         <h1 className="text-xl font-bold text-white truncate">{review.pr_title ?? `PR #${review.pr_number}`}</h1>
       </div>
@@ -90,7 +92,7 @@ export default function PRDetail() {
         return (
           <div key={filename} className="mb-8 bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
             <div className="px-5 py-3 border-b border-slate-700 font-mono text-sm text-slate-300 bg-slate-900">
-              📄 {filename}
+              <FontAwesomeIcon icon={faFileCode} className="mr-2 text-slate-500" />{filename}
             </div>
 
             {fileData?.patch && (

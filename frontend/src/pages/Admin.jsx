@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTrash } from '@fortawesome/free-solid-svg-icons'
 import { useReviews } from '../hooks/useReviews'
 import { clearDb } from '../services/api'
 
@@ -36,7 +38,7 @@ export default function Admin() {
           disabled={clearing}
           className="shrink-0 px-4 py-2 bg-red-900 hover:bg-red-800 disabled:opacity-50 text-red-300 text-sm rounded-lg transition-colors"
         >
-          {clearing ? 'Clearing...' : '🗑 Clear DB'}
+          {clearing ? 'Clearing...' : <><FontAwesomeIcon icon={faTrash} className="mr-1.5" />Clear DB</>}
         </button>
       </div>
     </div>
