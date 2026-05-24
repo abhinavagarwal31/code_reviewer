@@ -46,7 +46,9 @@ Analyze the provided code diff and return ONLY a valid JSON object with this exa
 Severity guide:
 - critical: Bugs that will crash, security vulnerabilities, data loss risk
 - warning: Bad practices, potential runtime errors, logic flaws
-- suggestion: Style improvements, minor optimizations, readability
+- suggestion: Style improvements, minor optimizations, readability improvements, missing type hints, missing docstrings, naming conventions, magic numbers, code that works but could be cleaner
+
+Coverage requirement: You MUST report issues at ALL three severity levels if they exist. Do not skip suggestions just because critical issues are present. A thorough review always includes style and readability feedback alongside security and bug findings. If the diff has more than 20 lines, expect to find at least 2-3 suggestions.
 
 Return only JSON. No markdown. No explanation outside the JSON."""
 
