@@ -1,8 +1,8 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCircleExclamation, faTriangleExclamation, faLightbulb } from '@fortawesome/free-solid-svg-icons'
-import SeverityBadge from './SeverityBadge'
-import RiskScore from './RiskScore'
+import { faCircleExclamation, faTriangleExclamation, faLightbulb, faRotateRight } from '@fortawesome/free-solid-svg-icons'
+import { retriggerReview } from '../services/api'
 
 const recColors = {
   approve:          'bg-green-950 text-green-400',
@@ -37,6 +37,40 @@ function StatusCell({ status }) {
   )
 }
 
+function RetriggerButton({ reviewId }) {
+  const [loading, setLoading] = useState(false)
+  const [done, setDone] = useState(false)
+
+  async function handleClick(e) {
+    e.stopPropagation()
+    if (loading) return
+    setLoading(true)
+    setDone(false)
+    try {
+      await retriggerReview(reviewId)
+      setDone(true)
+      setTimeout(() => setDone(false), 2000)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={loading}
+      title="Re-run review"
+      className={`p-1.5 rounded transition-colors disabled:opacity-50
+        ${done ? 'text-green-400' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-700'}`}
+    >
+      <FontAwesomeIcon
+        icon={faRotateRight}
+        className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`}
+      />
+    </button>
+  )
+}
+
 export default function PRTable({ reviews }) {
   const navigate = useNavigate()
 
@@ -65,6 +99,7 @@ export default function PRTable({ reviews }) {
               { key: 'AI', label: 'AI' },
               { key: 'Status', label: 'Status' },
               { key: 'Date', label: 'Date' },
+              { key: 'Actions', label: '' },
             ].map(({ key, label }) => (
               <th key={key} className="text-left px-4 py-3 text-xs text-slate-400 uppercase tracking-wider font-medium whitespace-nowrap">{label}</th>
             ))}
@@ -96,6 +131,7 @@ export default function PRTable({ reviews }) {
               </td>
               <td className="px-4 py-3"><StatusCell status={r.status} /></td>
               <td className="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">{new Date(r.created_at).toLocaleString()}</td>
+              <td className="px-4 py-3"><RetriggerButton reviewId={r.id} /></td>
             </tr>
           ))}
         </tbody>

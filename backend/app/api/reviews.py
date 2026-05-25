@@ -1,13 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, delete
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
+import logging
 
-from app.db.database import get_db
+from app.db.database import get_db, AsyncSessionLocal
 from app.models.review import Review
 from app.models.comment import ReviewComment
+from app.services.review_service import run_review
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -96,6 +100,26 @@ async def clear_db(db: AsyncSession = Depends(get_db)):
     await db.execute(delete(Review))
     await db.commit()
     return {"status": "cleared"}
+
+
+async def _retrigger_bg(owner: str, repo: str, pr_number: int):
+    try:
+        async with AsyncSessionLocal() as db:
+            await run_review(owner, repo, pr_number, db)
+    except Exception as e:
+        logger.error(f"Retrigger failed for {owner}/{repo}#{pr_number}: {type(e).__name__}: {e}")
+
+
+@router.post("/reviews/{review_id}/retrigger")
+async def retrigger_review(review_id: int, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Review).where(Review.id == review_id))
+    source = result.scalar_one_or_none()
+    if not source:
+        raise HTTPException(status_code=404, detail="Review not found")
+
+    owner, repo = source.repo_name.split("/", 1)
+    background_tasks.add_task(_retrigger_bg, owner, repo, source.pr_number)
+    return {"status": "accepted", "pr_number": source.pr_number, "repo": source.repo_name}
 
 
 @router.get("/reviews/{review_id}", response_model=ReviewDetailOut)

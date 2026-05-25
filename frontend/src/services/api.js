@@ -17,6 +17,11 @@ export async function clearDb() {
   return res.data
 }
 
+export async function retriggerReview(reviewId) {
+  const res = await axios.post(`${BASE_URL}/reviews/${reviewId}/retrigger`)
+  return res.data
+}
+
 export async function getProvider() {
   const res = await axios.get(`${BASE_URL}/config/provider`)
   return res.data.provider
