@@ -61,16 +61,19 @@ async def run_review(owner: str, repo: str, pr_number: int, db: AsyncSession) ->
         await db.commit()
         await db.refresh(review)
 
-        await post_review_to_github(
-            owner=owner,
-            repo=repo,
-            pr_number=pr_number,
-            commit_sha=commit_sha,
-            summary=review.summary or "",
-            recommendation=review.recommendation or "needs_discussion",
-            issues=analysis.get("issues", []),
-            risk_score=review.risk_score,
-        )
+        try:
+            await post_review_to_github(
+                owner=owner,
+                repo=repo,
+                pr_number=pr_number,
+                commit_sha=commit_sha,
+                summary=review.summary or "",
+                recommendation=review.recommendation or "needs_discussion",
+                issues=analysis.get("issues", []),
+                risk_score=review.risk_score,
+            )
+        except Exception as post_err:
+            logger.error(f"GitHub post failed for {owner}/{repo}#{pr_number}: {type(post_err).__name__}: {post_err}")
 
     except Exception as e:
         logger.error(f"Review failed for {owner}/{repo}#{pr_number}: {type(e).__name__}: {e}")

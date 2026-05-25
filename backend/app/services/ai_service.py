@@ -50,6 +50,11 @@ Severity guide:
 
 Coverage requirement: You MUST report issues at ALL three severity levels if they exist. Do not skip suggestions just because critical issues are present. A thorough review always includes style and readability feedback alongside security and bug findings. If the diff has more than 20 lines, expect to find at least 2-3 suggestions.
 
+Recommendation rules (follow these exactly):
+- approve: No critical issues AND no warnings. Only suggestions or no issues at all. Risk score 0-3.
+- needs_discussion: No critical issues but warnings are present. Risk score 4-6.
+- request_changes: Any critical issue present, OR risk score >= 7.
+
 Return only JSON. No markdown. No explanation outside the JSON."""
 
 
@@ -77,8 +82,8 @@ async def _analyze_with_openai(diff_content: str) -> dict:
 async def _analyze_with_claude(diff_content: str) -> dict:
     client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
     response = await client.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=2000,
+        model="claude-sonnet-4-6",
+        max_tokens=4096,
         system=SYSTEM_PROMPT,
         messages=[
             {"role": "user", "content": f"Review this diff:\n\n{diff_content}"},
