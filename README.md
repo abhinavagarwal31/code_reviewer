@@ -32,6 +32,7 @@ The MergeLens dashboard updates in real time via Server-Sent Events. When a PR i
 - **Diff viewer** — the PR detail page renders the filtered diff with per-file comment grouping, so the code and the AI's analysis appear together.
 - **Diff filtering** — lock files, build artifacts, minified JS, and generated files are stripped before the AI sees the diff. This reduces token cost and improves analysis quality.
 - **Smart fallback** — GitHub returns 422 when a PR author tries to request changes on their own PR. MergeLens detects this and falls back to a COMMENT review automatically, so the demo never breaks.
+- **Re-trigger analysis** — each review row has a retrigger button to re-run AI analysis on demand, without redelivering the webhook from GitHub.
 
 ---
 
